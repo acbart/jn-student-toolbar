@@ -52,10 +52,12 @@ define([
         var cells = Jupyter.notebook.get_cells();
         if (cells.length) {
             var lastCell = cells[cells.length-1];
-            lastCell.metadata.set_deletable = state;
-            lastCell.metadata.set_editable = state;
+            lastCell.metadata.editable = state;
             lastCell.input.toggle(state);
         }
+        cells.forEach(function (cell) {
+            cell.metadata.deletable = state;
+        });
     }
     
     function registerKeyBindings() {
