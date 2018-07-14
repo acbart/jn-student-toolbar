@@ -35,3 +35,10 @@ I'm not entirely clear on how much of that was necessary, but it was what got me
 # Secrets
 
 You can flip student mode on/off for a notebook by pressing "CTRL-ALT-U".
+
+# Local Client Development
+
+Most of the steps are the same as the above. You probably won't have to fuss with the weird part (where you adjust the config file).
+
+# Proposed Changes
+
