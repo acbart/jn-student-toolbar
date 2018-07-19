@@ -24,7 +24,7 @@ define([
         }], 'run-all-cells')
         Jupyter.toolbar.add_buttons_group([{
             'callback': downloadIPYNB,
-            'label': 'Download IPYNB file',
+            'label': 'Download Notebook',
             'icon': 'fa-download'
         }], 'download-ipynb');
         

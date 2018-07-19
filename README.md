@@ -40,5 +40,7 @@ You can flip student mode on/off for a notebook by pressing "CTRL-ALT-U".
 
 Most of the steps are the same as the above. You probably won't have to fuss with the weird part (where you adjust the config file).
 
-# Proposed Changes
+# Updating
+
+Once you've pushed changes to the GitHub, you can update the server by pulling it into the git folder and then running the `nbextension install` command above again.
 
