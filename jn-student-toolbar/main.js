@@ -1,13 +1,27 @@
+/**
+TODO:    
+    We'll need to make sure that MatPlotLib is correctly captured
+**/
+
 define([
-    'base/js/namespace',
+    'base/js/namespace', 'require',
 ], function(
-    Jupyter
+    Jupyter, requirejs,
 ) {
     var prefix = 'jn-student-toolbar';
-    var actionName = 'toggle-student-mode';
-    var fullActionName = prefix+':'+actionName;
+    var toggleActionName = 'toggle-student-mode';
+    var runActionName = 'run-all-cells-smartly';
     var keyboardSequence = 'Ctrl-Alt-U';
     function load_ipython_extension() {
+        $('<link/>')
+			.attr({
+				id: 'collapsible_headings_css',
+				rel: 'stylesheet',
+				type: 'text/css',
+				href: requirejs.toUrl('./main.css')
+			})
+			.appendTo('head');
+        
         var action = {
             icon: 'fa-lock',
             help    : 'Switch in/out of student mode',
@@ -15,13 +29,15 @@ define([
             handler : toggleStudentMode
         };
         
-        Jupyter.actions.register(action, actionName, prefix);
-        Jupyter.toolbar.add_buttons_group([fullActionName], 'toggle-student-mode');
+        Jupyter.actions.register(action, toggleActionName, prefix);
+        Jupyter.actions.register(action, runActionName, prefix);
+        Jupyter.toolbar.add_buttons_group([prefix+':'+toggleActionName], toggleActionName);
         Jupyter.toolbar.add_buttons_group([{
-            'action': 'jupyter-notebook:run-all-cells',
+            'action': 'jn-student-toolbar:'+runActionName,
+            'callback': runAllCellsSmartly,
             'label': 'Run all',
             'icon': 'fa-step-forward'
-        }], 'run-all-cells')
+        }], runActionName)
         Jupyter.toolbar.add_buttons_group([{
             'callback': downloadIPYNB,
             'label': 'Download Notebook',
@@ -37,6 +53,10 @@ define([
         Jupyter.notebook.metadata.student_mode = !studentMode;
         Jupyter.actions.call("jupyter-notebook:save-notebook")
         displayStudentMode();
+        var cells = Jupyter.notebook.get_cells();
+        cells.forEach(function (cell) { 
+            $(cell.element).toggleClass('student-mode-hide-errors', !studentMode) 
+        });
     }
     
     function displayStudentMode() {
@@ -99,9 +119,31 @@ define([
         }
     }
     
+    function runAllCellsSmartly() {
+        /**
+        Make it so that running will attempt to run all cells but the last one, failing along the way gracefully
+            And then ALWAYS run the last cell no matter what
+        https://github.com/jupyter/notebook/blob/master/notebook/static/notebook/js/codecell.js#L327
+    
+        Make it so that the errors are hidden in other cells
+            Add/remove class based on StudentMode at the top of cell outputs
+            CSS rule that hides error output if that class is present
+        **/
+        console.log("FIRING PLEASE STOP ME")
+        var notebook = Jupyter.notebook;
+        notebook.command_mode();
+        var cell;
+        for (var i = 0; i < notebook.ncells(); i++) {
+            cell = notebook.get_cell(i);
+            cell.execute(false);
+        }
+        notebook.set_dirty(true);
+        notebook.scroll_to_bottom()
+    }
+    
     function registerKeyBindings() {
         //Jupyter.keyboard_manager.command_shortcuts.remove_shortcut(keyboardSequence);
-        Jupyter.keyboard_manager.command_shortcuts.add_shortcut(keyboardSequence, fullActionName);
+        Jupyter.keyboard_manager.command_shortcuts.add_shortcut(keyboardSequence, prefix+':'+toggleActionName);
     }
 
     return {
