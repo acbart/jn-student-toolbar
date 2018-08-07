@@ -4,9 +4,9 @@ TODO:
 **/
 
 define([
-    'base/js/namespace', 'require',
+    'base/js/namespace', 'require', 'base/js/events'
 ], function(
-    Jupyter, requirejs,
+    Jupyter, requirejs, events
 ) {
     var prefix = 'jn-student-toolbar';
     var toggleActionName = 'toggle-student-mode';
@@ -21,6 +21,13 @@ define([
 				href: requirejs.toUrl('./main.css')
 			})
 			.appendTo('head');
+        
+        var dwm = $("#download_menu")
+        var downloadEntry = $('<li id="download_html_embed"><a href="#">HTML Embedded (.html)</a></li>')
+        dwm.append(downloadEntry)
+        downloadEntry.click(function () {
+            Jupyter.menubar._nbconvert('html_embed', true);
+        });
         
         var action = {
             icon: 'fa-lock',
@@ -43,9 +50,21 @@ define([
             'label': 'Download Notebook',
             'icon': 'fa-download'
         }], 'download-ipynb');
+        /*
+         Added HTML Embed download button per 
+         https://github.com/ipython-contrib/jupyter_contrib_nbextensions/tree/master/src/jupyter_contrib_nbextensions/nbextensions/export_embedded
+        */
+        Jupyter.toolbar.add_buttons_group([{
+            'callback': function() {
+                Jupyter.menubar._nbconvert('html_embed', true);
+            },
+            'label': 'Download HTML',
+            'icon': 'fa-download'
+        }], 'export-embedded-html', 'export_embedded');
         
         registerKeyBindings();
         displayStudentMode();
+        setEventHandlers();
     }
     
     function toggleStudentMode() {
@@ -74,6 +93,7 @@ define([
         $("#maintoolbar-container #run_int").toggle(state);
         $("#maintoolbar-container #save-notbook").toggle(state);
         $("#maintoolbar-container #download-ipynb").toggle(!state);
+        $("#maintoolbar-container #export-embedded-html").toggle(!state);
         $("#maintoolbar-container #run-all-cells").toggle(!state);
         $(".btn.validate").parent().toggle(state);
         $("[data-jupyter-action='jupyter-notebook:show-command-palette']").parent().toggle(state)
@@ -81,6 +101,12 @@ define([
         $("#insert_menu").parent().toggle(state);
         $("#change_cell_type").toggle(state);
         $("#maintoolbar-container #toggle-student-mode").toggle(state);
+        $("#download_menu #download_script").toggle(false);
+        $("#download_menu #download_html").toggle(false);
+        $("#download_menu #download_markdown").toggle(false);
+        $("#download_menu #download_rst").toggle(false);
+        $("#download_menu #download_latex").toggle(false);
+        $("#download_menu #download_pdf").toggle(false);
     }
     
     function makeFinalCellSpecial(state) {
@@ -129,7 +155,6 @@ define([
             Add/remove class based on StudentMode at the top of cell outputs
             CSS rule that hides error output if that class is present
         **/
-        console.log("FIRING PLEASE STOP ME")
         var notebook = Jupyter.notebook;
         notebook.command_mode();
         var cell;
@@ -144,6 +169,32 @@ define([
     function registerKeyBindings() {
         //Jupyter.keyboard_manager.command_shortcuts.remove_shortcut(keyboardSequence);
         Jupyter.keyboard_manager.command_shortcuts.add_shortcut(keyboardSequence, prefix+':'+toggleActionName);
+    }
+    
+    function keepCodeLinesConsistent() {
+        var last_line = 0;
+        Jupyter.notebook.get_cells().forEach(function(cell) {
+           if (cell.cell_type == "code") {
+                cell.code_mirror.setOption('firstLineNumber', last_line + 1)
+                last_line += cell.code_mirror.lineCount()
+           }
+        });
+    }
+    
+    function setEventHandlers() {
+        $.each(Jupyter.notebook.get_cells(), function (index, cell) {
+            if (cell.cell_type == "code") {
+                cell.code_mirror.off('change', keepCodeLinesConsistent);
+                cell.code_mirror.on('change', keepCodeLinesConsistent);
+            }
+        })
+        keepCodeLinesConsistent();
+        events.on('create.Cell', function() {
+            setEventHandlers();
+            keepCodeLinesConsistent();
+        });
+        events.on('delete.Cell', keepCodeLinesConsistent)
+        events.on('selected_cell_type_changed.Notebook', keepCodeLinesConsistent)
     }
 
     return {
