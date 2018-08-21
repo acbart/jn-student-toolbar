@@ -174,7 +174,8 @@ define([
     function keepCodeLinesConsistent() {
         var last_line = 0;
         Jupyter.notebook.get_cells().forEach(function(cell) {
-           if (cell.cell_type == "code") {
+           if (cell.cell_type == "code" || cell.cell_type == "markdown"
+               || cell.cell_type == "raw") {
                 cell.code_mirror.setOption('firstLineNumber', last_line + 1)
                 last_line += cell.code_mirror.lineCount()
            }
@@ -183,7 +184,8 @@ define([
     
     function setEventHandlers() {
         $.each(Jupyter.notebook.get_cells(), function (index, cell) {
-            if (cell.cell_type == "code") {
+            if (cell.cell_type == "code" || cell.cell_type == "markdown"
+               || cell.cell_type == "raw") {
                 cell.code_mirror.off('change', keepCodeLinesConsistent);
                 cell.code_mirror.on('change', keepCodeLinesConsistent);
             }
@@ -194,6 +196,7 @@ define([
             keepCodeLinesConsistent();
         });
         events.on('delete.Cell', keepCodeLinesConsistent)
+        events.on('edit_mode.Cell', keepCodeLinesConsistent)
         events.on('selected_cell_type_changed.Notebook', keepCodeLinesConsistent)
     }
 
