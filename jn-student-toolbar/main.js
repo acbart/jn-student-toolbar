@@ -115,6 +115,9 @@ define([
             var lastCell = cells[cells.length-1];
             lastCell.metadata.editable = state;
             lastCell.input.toggle(state);
+            var firstCell = cells[0];
+            firstCell.metadata.editable = state;
+            firstCell.input.toggle(state);
         }
         cells.forEach(function (cell) {
             cell.metadata.deletable = state;
