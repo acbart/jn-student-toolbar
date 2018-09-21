@@ -97,7 +97,7 @@ define([
         $("#maintoolbar-container #run-all-cells").toggle(!state);
         $(".btn.validate").parent().toggle(state);
         $("[data-jupyter-action='jupyter-notebook:show-command-palette']").parent().toggle(state)
-        $("#edit_menu").parent().toggle(state);
+        //$("#edit_menu").parent().toggle(state);
         $("#insert_menu").parent().toggle(state);
         $("#change_cell_type").toggle(state);
         $("#maintoolbar-container #toggle-student-mode").toggle(state);
