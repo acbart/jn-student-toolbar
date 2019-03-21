@@ -73,9 +73,12 @@ define([
         Jupyter.actions.call("jupyter-notebook:save-notebook")
         displayStudentMode();
         var cells = Jupyter.notebook.get_cells();
-        cells.forEach(function (cell) { 
+        for(var i = 0; i < cells.length - 1; i++){
+            $(cells[i].element).toggleClass('student-mode-hide-errors', !studentMode) 
+        }
+        /*cells.forEach(function (cell) { 
             $(cell.element).toggleClass('student-mode-hide-errors', !studentMode) 
-        });
+        });*/
     }
     
     function displayStudentMode() {
@@ -97,7 +100,7 @@ define([
         $("#maintoolbar-container #run-all-cells").toggle(!state);
         $(".btn.validate").parent().toggle(state);
         $("[data-jupyter-action='jupyter-notebook:show-command-palette']").parent().toggle(state)
-        //$("#edit_menu").parent().toggle(state);
+        $("#edit_menu").parent().toggle(true);
         $("#insert_menu").parent().toggle(state);
         $("#change_cell_type").toggle(state);
         $("#maintoolbar-container #toggle-student-mode").toggle(state);
@@ -160,10 +163,14 @@ define([
         **/
         var notebook = Jupyter.notebook;
         notebook.command_mode();
+        var studentMode = Jupyter.notebook.metadata.student_mode || false;
         var cell;
         for (var i = 0; i < notebook.ncells(); i++) {
             cell = notebook.get_cell(i);
             cell.execute(false);
+            if(i < notebook.ncells()-1){
+                $(cell.element).toggleClass('student-mode-hide-errors', studentMode)
+            }
         }
         notebook.set_dirty(true);
         notebook.scroll_to_bottom()
