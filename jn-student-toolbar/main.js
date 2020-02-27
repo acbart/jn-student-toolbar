@@ -174,6 +174,7 @@ define([
         }
         notebook.set_dirty(true);
         notebook.scroll_to_bottom()
+        Jupyter.actions.call("jupyter-notebook:save-notebook")
     }
     
     function registerKeyBindings() {
