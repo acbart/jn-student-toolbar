@@ -173,8 +173,12 @@ define([
             }
         }
         notebook.set_dirty(true);
+        Jupyter.actions.call("jupyter-notebook:save-notebook");
         notebook.scroll_to_bottom()
-        Jupyter.actions.call("jupyter-notebook:save-notebook")
+        var model = {type: "notebook", content: notebook.toJSON()};
+        var notebookName = notebook.get_notebook_name();
+        var logPath = ".ipynb_checkpoints/" + notebookName + "-" + new Date().getTime() + ".ipynb";
+        notebook.contents.save(logPath, model);
     }
     
     function registerKeyBindings() {
